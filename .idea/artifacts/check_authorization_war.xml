@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="check-authorization:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="check-authorization.war">
+      <element id="artifact" artifact-name="check-authorization:war exploded" />
+    </root>
+  </artifact>
+</component>
