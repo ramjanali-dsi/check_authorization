@@ -23,7 +23,7 @@ public class SessionUtil {
 
     private SessionUtil(){
         Configuration configuration = new Configuration();
-        configuration.configure("hibernate-authorization.cfg.xml");
+        configuration.configure("hibernate-checkauthorization.cfg.xml");
 
         final Reflections reflections = new Reflections("com.dsi.checkauthorization.model");
 
