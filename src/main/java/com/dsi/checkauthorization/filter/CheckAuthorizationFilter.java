@@ -81,7 +81,7 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
             } else {
 
                 String finalAccessToken = Utility.getFinalToken(accessToken);
-                logger.info("AccessToken found: " + accessToken);
+                logger.info("AccessToken found: " + finalAccessToken);
 
                 Claims tokenObj = authService.parseToken(finalAccessToken);
                 if (tokenObj == null) {
@@ -93,7 +93,7 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
                     return;
                 }
 
-                if (!authService.isUserSessionExist(tokenObj.getId(), accessToken)) {
+                if (!authService.isUserSessionExist(tokenObj.getId(), finalAccessToken)) {
                     ErrorContext errorContext = new ErrorContext(tokenObj.getId(), "UserSession", "UserSession don't exist by userID: "
                             + tokenObj.getId());
                     ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
@@ -103,7 +103,7 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
                     return;
                 }
 
-                request.setAttribute(Constants.ACCESS_TOKEN, accessToken);
+                request.setAttribute(Constants.ACCESS_TOKEN, finalAccessToken);
                 request.setAttribute(Constants.USER_ID, tokenObj.getId());
 
                 if (!authService.isAllowedApiForAuthenticated(path, method) &&
