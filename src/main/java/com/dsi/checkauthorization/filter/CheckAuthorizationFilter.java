@@ -42,6 +42,15 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
         logger.info("Request path: " + path);
         logger.info("Request method: " + method);
 
+        if(method.equals(Constants.OPTION)){
+            ErrorContext errorContext = new ErrorContext(method, null, "Method not found.");
+            ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
+                    Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
+
+            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
+            return;
+        }
+
         if(!path.startsWith(Constants.API_DOCS)) {
 
             if (Utility.isNullOrEmpty(accessToken)) {
