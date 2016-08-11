@@ -10,7 +10,7 @@ public class Constants {
 
     public static final String AUTHORIZATION = "authorization";
 
-    public static final String OPTION = "OPTIONS";
+    public static final String OPTIONS = "OPTIONS";
 
     public static final String SYSTEM = "system";
 

@@ -42,25 +42,56 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
         logger.info("Request path: " + path);
         logger.info("Request method: " + method);
 
-        if(method.equals(Constants.OPTION)){
-            ErrorContext errorContext = new ErrorContext(method, null, "Method not found.");
-            ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
-                    Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
-
-            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
+        if(method.equals(Constants.OPTIONS)){
+            requestContext.abortWith(Response.status(Response.Status.OK).build());
             return;
-        }
 
-        if(!path.startsWith(Constants.API_DOCS)) {
+        } else {
 
-            if (Utility.isNullOrEmpty(accessToken)) {
-                logger.info("AccessToken not defined.");
+            if (!path.startsWith(Constants.API_DOCS)) {
 
-                if (!authService.isAllowedApiForPublic(path, method)) {
+                if (Utility.isNullOrEmpty(accessToken)) {
+                    logger.info("AccessToken not defined.");
 
-                    String system = request.getHeader(Constants.SYSTEM);
-                    if (Utility.isNullOrEmpty(system)) {
-                        ErrorContext errorContext = new ErrorContext(null, "System", "System header not defined.");
+                    if (!authService.isAllowedApiForPublic(path, method)) {
+
+                        String system = request.getHeader(Constants.SYSTEM);
+                        if (Utility.isNullOrEmpty(system)) {
+                            ErrorContext errorContext = new ErrorContext(null, "System", "System header not defined.");
+                            ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
+                                    Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
+
+                            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
+                            return;
+                        }
+
+                        if (!Utility.findSystemInfo(system)) {
+                            ErrorContext errorContext = new ErrorContext(system, "System", "System info not found: " + system);
+                            ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
+                                    Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
+
+                            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
+                            return;
+                        }
+
+                        if (!authService.isAllowedApiForSystem(path, method)) {
+                            ErrorContext errorContext = new ErrorContext(null, "Api", "Api is not allowed by system url: " +
+                                    "" + path + " AND method: " + method);
+                            ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
+                                    Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
+
+                            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
+                            return;
+                        }
+                    }
+                } else {
+
+                    String finalAccessToken = Utility.getFinalToken(accessToken);
+                    logger.info("AccessToken found: " + finalAccessToken);
+
+                    Claims tokenObj = authService.parseToken(finalAccessToken);
+                    if (tokenObj == null) {
+                        ErrorContext errorContext = new ErrorContext(null, "AccessToken", "AccessToken parse failed.");
                         ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
                                 Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
 
@@ -68,8 +99,9 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
                         return;
                     }
 
-                    if (!Utility.findSystemInfo(system)) {
-                        ErrorContext errorContext = new ErrorContext(system, "System", "System info not found: " + system);
+                    if (!authService.isUserSessionExist(tokenObj.getId(), finalAccessToken)) {
+                        ErrorContext errorContext = new ErrorContext(tokenObj.getId(), "UserSession", "UserSession don't exist by userID: "
+                                + tokenObj.getId());
                         ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
                                 Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
 
@@ -77,54 +109,20 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
                         return;
                     }
 
-                    if (!authService.isAllowedApiForSystem(path, method)) {
-                        ErrorContext errorContext = new ErrorContext(null, "Api", "Api is not allowed by system url: " +
-                                "" + path + " AND method: " + method);
+                    request.setAttribute(Constants.ACCESS_TOKEN, finalAccessToken);
+                    request.setAttribute(Constants.USER_ID, tokenObj.getId());
+
+                    if (!authService.isAllowedApiForAuthenticated(path, method) &&
+                            !authService.isAllowedApiByUserID(tokenObj.getId(), path, method)) {
+
+                        ErrorContext errorContext = new ErrorContext(tokenObj.getId(), "Api", "Api is not allowed by userID: "
+                                + tokenObj.getId());
                         ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
                                 Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
 
                         requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
                         return;
                     }
-                }
-            } else {
-
-                String finalAccessToken = Utility.getFinalToken(accessToken);
-                logger.info("AccessToken found: " + finalAccessToken);
-
-                Claims tokenObj = authService.parseToken(finalAccessToken);
-                if (tokenObj == null) {
-                    ErrorContext errorContext = new ErrorContext(null, "AccessToken", "AccessToken parse failed.");
-                    ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
-                            Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
-
-                    requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
-                    return;
-                }
-
-                if (!authService.isUserSessionExist(tokenObj.getId(), finalAccessToken)) {
-                    ErrorContext errorContext = new ErrorContext(tokenObj.getId(), "UserSession", "UserSession don't exist by userID: "
-                            + tokenObj.getId());
-                    ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
-                            Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
-
-                    requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
-                    return;
-                }
-
-                request.setAttribute(Constants.ACCESS_TOKEN, finalAccessToken);
-                request.setAttribute(Constants.USER_ID, tokenObj.getId());
-
-                if (!authService.isAllowedApiForAuthenticated(path, method) &&
-                        !authService.isAllowedApiByUserID(tokenObj.getId(), path, method)) {
-
-                    ErrorContext errorContext = new ErrorContext(tokenObj.getId(), "Api", "Api is not allowed by userID: "
-                            + tokenObj.getId());
-                    ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
-                            Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
-
-                    requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
-                    return;
                 }
             }
         }
