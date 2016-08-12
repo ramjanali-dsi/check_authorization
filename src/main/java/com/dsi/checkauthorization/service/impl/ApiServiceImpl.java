@@ -39,16 +39,7 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     public boolean isAllowedApiByUserID(String userID, String url, String method) throws CustomException {
-        Api api = apiDao.getApiByUrlAndMethod(url, method);
-        if(api == null){
-            ErrorContext errorContext = new ErrorContext(null, "Api", "Api is not found by url: "
-                    + url + " And method: " + method);
-            ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
-                    Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
-            throw new CustomException(errorMessage);
-        }
-
-        boolean res = apiDao.isAllowedApiByUserID(userID);
+        boolean res = apiDao.isAllowedApiByUserID(userID, url, method);
         if(!res){
             ErrorContext errorContext = new ErrorContext(userID, "Api", "Api is not allowed by userID: " + userID);
             ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,

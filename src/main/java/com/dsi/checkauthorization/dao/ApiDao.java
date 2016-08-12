@@ -11,5 +11,5 @@ public interface ApiDao {
 
     boolean isAllowedApiByType(String apiID, String type);
 
-    boolean isAllowedApiByUserID(String userID);
+    boolean isAllowedApiByUserID(String userID, String url, String method);
 }

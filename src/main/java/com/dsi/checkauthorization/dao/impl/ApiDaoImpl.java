@@ -65,15 +65,17 @@ public class ApiDaoImpl extends BaseDao implements ApiDao {
     }
 
     @Override
-    public boolean isAllowedApiByUserID(String userID) {
+    public boolean isAllowedApiByUserID(String userID, String url, String method) {
         Session session = null;
         Api api = null;
         try{
             session = getSession();
-            Query query = session.createQuery("FROM Api a WHERE a.apiId in (SELECT ma.api.apiId FROM MenuApi ma WHERE ma.menu.menuId " +
+            Query query = session.createQuery("FROM Api a WHERE a.url =:url AND a.method =:method AND a.apiId in (SELECT ma.api.apiId FROM MenuApi ma WHERE ma.menu.menuId " +
                     "in (SELECT rm.menu.menuId FROM RoleMenu rm WHERE rm.role.roleId in (SELECT ur.role.roleId FROM UserRole ur " +
                     "WHERE ur.user.userId =:userID)))");
 
+            query.setParameter("url", url);
+            query.setParameter("method", method);
             query.setParameter("userID", userID);
 
             api = (Api) query.uniqueResult();
