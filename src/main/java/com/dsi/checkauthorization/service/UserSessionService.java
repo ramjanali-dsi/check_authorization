@@ -1,6 +1,5 @@
 package com.dsi.checkauthorization.service;
 
-import com.dsi.checkauthorization.exception.CustomException;
 import com.dsi.checkauthorization.model.UserSession;
 
 /**
@@ -8,5 +7,5 @@ import com.dsi.checkauthorization.model.UserSession;
  */
 public interface UserSessionService {
 
-    UserSession getUserSessionByUserIdAndAccessToken(String userID, String accessToken) throws CustomException;
+    UserSession getUserSessionByUserIdAndAccessToken(String userID, String accessToken);
 }

@@ -9,7 +9,7 @@ public interface ApiDao {
 
     Api getApiByUrlAndMethod(String url, String method);
 
-    boolean isAllowedApiByType(String apiID, String type);
+    boolean isAllowedApiByType(String url, String method, String type);
 
     boolean isAllowedApiByUserID(String userID, String url, String method);
 }

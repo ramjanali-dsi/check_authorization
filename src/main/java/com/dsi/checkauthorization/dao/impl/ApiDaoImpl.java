@@ -38,13 +38,15 @@ public class ApiDaoImpl extends BaseDao implements ApiDao {
     }
 
     @Override
-    public boolean isAllowedApiByType(String apiID, String type) {
+    public boolean isAllowedApiByType(String url, String method, String type) {
         Session session = null;
         DefaultApi defaultApi = null;
         try{
             session = getSession();
-            Query query = session.createQuery("FROM DefaultApi da WHERE da.api.apiId =:apiID AND da.allowType =:allowType");
-            query.setParameter("apiID", apiID);
+            Query query = session.createQuery("FROM DefaultApi da WHERE da.api.url =:url AND " +
+                    "da.api.method =:method AND da.allowType =:allowType");
+            query.setParameter("url", url);
+            query.setParameter("method", method);
             query.setParameter("allowType", type);
 
             defaultApi = (DefaultApi) query.uniqueResult();
