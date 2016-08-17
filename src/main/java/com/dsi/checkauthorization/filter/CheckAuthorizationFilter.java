@@ -48,7 +48,7 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
 
         } else {
 
-            if (!path.startsWith(Constants.API_DOCS)) {
+            if (!path.startsWith(Constants.API_DOCS) && !path.startsWith(Constants.REFERENCE_API)) {
 
                 if (Utility.isNullOrEmpty(accessToken)) {
                     logger.info("AccessToken not defined.");

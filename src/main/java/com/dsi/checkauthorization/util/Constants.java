@@ -29,6 +29,7 @@ public class Constants {
     public static final String EQUAL_SIGN = "=";
 
     public static final String API_DOCS = "api-docs";
+    public static final String REFERENCE_API = "v1/reference";
 
     // Error Code
     public static final String CHECK_AUTHORIZATION_SERVICE_0001 = "check_authorization_service_0001";
