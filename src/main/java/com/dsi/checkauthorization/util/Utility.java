@@ -47,9 +47,8 @@ public class Utility {
 
     public static final List<String> getSystemInfoList(){
         List<String> systemList = new ArrayList<>();
-        systemList.add("1234");
-        systemList.add("123456");
-        systemList.add("12");
+        systemList.add("1b549aa6-fd9c-4e7f-941e-bbed0a4c6ec8");
+        systemList.add("0759a760-b9df-4c8a-8a64-fa31f256d13b");
         return systemList;
     }
 
