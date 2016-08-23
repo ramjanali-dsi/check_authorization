@@ -35,11 +35,11 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
         String path = requestContext.getUriInfo().getPath();
         String method = requestContext.getRequest().getMethod();
 
-        if(!Utility.isNullOrEmpty(request.getQueryString())){
+        /*if(!Utility.isNullOrEmpty(request.getQueryString())){
             path = path + Constants.QUESTION_SIGN + request.getQueryString();
-        }
+        }*/
 
-        logger.info("Request path: " + path);
+        logger.info("Request path: " + path + Constants.QUESTION_SIGN + request.getQueryString());
         logger.info("Request method: " + method);
 
         if(method.equals(Constants.OPTIONS)){
