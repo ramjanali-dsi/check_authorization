@@ -1,7 +1,6 @@
 package com.dsi.checkauthorization.dao.impl;
 
 import com.dsi.checkauthorization.util.SessionUtil;
-import org.apache.log4j.Logger;
 import org.hibernate.Session;
 
 /**
@@ -15,7 +14,7 @@ public class BaseDao {
         return session;
     }
 
-    public void close(Session session) {
+    void close(Session session) {
         session.getTransaction().commit();
         session.close();
     }

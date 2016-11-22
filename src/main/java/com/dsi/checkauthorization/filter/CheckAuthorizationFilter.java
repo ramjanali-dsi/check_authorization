@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
@@ -35,12 +36,39 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
         String path = requestContext.getUriInfo().getPath();
         String method = requestContext.getRequest().getMethod();
 
-        /*if(!Utility.isNullOrEmpty(request.getQueryString())){
-            path = path + Constants.QUESTION_SIGN + request.getQueryString();
-        }*/
-
-        logger.info("Request path: " + path + Constants.QUESTION_SIGN + request.getQueryString());
+        logger.info("Request path: " + path);
         logger.info("Request method: " + method);
+
+        if(request.getQueryString() != null){
+            logger.info("Request path with query: " + path + Constants.QUESTION_SIGN + request.getQueryString());
+        }
+
+        MultivaluedMap<String, String> pathParams = requestContext.getUriInfo().getPathParameters();
+        if(pathParams != null){
+            boolean flag;
+            String finalUrl = "";
+            String[] parseUrl = path.split("/");
+
+            for (int i=0; i<parseUrl.length; i++){
+                flag = true;
+
+                for (String key : pathParams.keySet()) {
+                    if (parseUrl[i].equals(pathParams.getFirst(key))) {
+                        flag = false;
+                        break;
+                    }
+                }
+
+                if(flag){
+                    if(i != 0){
+                        finalUrl += "/";
+                    }
+                    finalUrl += parseUrl[i];
+                }
+            }
+            path = finalUrl;
+            logger.info("Final Request path: " + path);
+        }
 
         if(method.equals(Constants.OPTIONS)){
             requestContext.abortWith(Response.status(Response.Status.OK).build());
@@ -48,7 +76,8 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
 
         } else {
 
-            if (!path.startsWith(Constants.API_DOCS) && !path.startsWith(Constants.REFERENCE_API)) {
+            if (!path.startsWith(Constants.API_DOCS) && !path.startsWith(Constants.REFERENCE_API)
+                    && !path.startsWith(Constants.PHOTO_API)) {
 
                 if (Utility.isNullOrEmpty(accessToken)) {
                     logger.info("AccessToken not defined.");

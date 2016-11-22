@@ -2,9 +2,9 @@ package com.dsi.checkauthorization.util;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.ServiceRegistryBuilder;
 import org.reflections.Reflections;
 
 import javax.persistence.Entity;
@@ -31,9 +31,10 @@ public class SessionUtil {
             configuration.addAnnotatedClass(cl);
         }
 
-        ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().
-                applySettings(configuration.getProperties()).build();
+        ServiceRegistryBuilder builder = new ServiceRegistryBuilder();
+        builder.applySettings(configuration.getProperties());
 
+        ServiceRegistry serviceRegistry = builder.buildServiceRegistry();
         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
     }
 
