@@ -33,6 +33,7 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) throws IOException {
 
         String accessToken = request.getHeader(Constants.AUTHORIZATION);
+        String tenantId = request.getHeader(Constants.TENANT_ID);
         String path = requestContext.getUriInfo().getPath();
         String method = requestContext.getRequest().getMethod();
 
@@ -112,6 +113,20 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
                             requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
                             return;
                         }
+
+                    } else {
+
+                        if(path.startsWith(Constants.RESET_API)){
+                            if(Utility.isNullOrEmpty(tenantId)){
+                                ErrorContext errorContext = new ErrorContext(null, null, "Tenant id not defined.");
+                                ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
+                                        Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
+
+                                requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
+                                return;
+                            }
+                            request.setAttribute(Constants.TENANT_ID, tenantId);
+                        }
                     }
                 } else {
 
@@ -140,6 +155,7 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
 
                     request.setAttribute(Constants.ACCESS_TOKEN, finalAccessToken);
                     request.setAttribute(Constants.USER_ID, tokenObj.getId());
+                    request.setAttribute(Constants.TENANT_NAME, tokenObj.getIssuer());
 
                     if (!authService.isAllowedApiForAuthenticated(path, method) &&
                             !authService.isAllowedApiByUserID(tokenObj.getId(), path, method)) {
