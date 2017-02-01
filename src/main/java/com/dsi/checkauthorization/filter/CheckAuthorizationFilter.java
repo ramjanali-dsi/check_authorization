@@ -7,6 +7,8 @@ import com.dsi.checkauthorization.util.Constants;
 import com.dsi.checkauthorization.util.Utility;
 import io.jsonwebtoken.Claims;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -153,15 +155,30 @@ public class CheckAuthorizationFilter implements ContainerRequestFilter {
                         return;
                     }
 
-                    request.setAttribute(Constants.ACCESS_TOKEN, finalAccessToken);
-                    request.setAttribute(Constants.USER_ID, tokenObj.getId());
-                    request.setAttribute(Constants.TENANT_NAME, tokenObj.getIssuer());
-
                     if (!authService.isAllowedApiForAuthenticated(path, method) &&
                             !authService.isAllowedApiByUserID(tokenObj.getId(), path, method)) {
 
                         ErrorContext errorContext = new ErrorContext(tokenObj.getId(), "Api", "Api is not allowed by userID: "
                                 + tokenObj.getId());
+                        ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
+                                Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
+
+                        requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(errorMessage).build());
+                        return;
+                    }
+
+                    request.setAttribute(Constants.ACCESS_TOKEN, finalAccessToken);
+                    request.setAttribute(Constants.USER_ID, tokenObj.getId());
+                    request.setAttribute(Constants.TENANT_NAME, tokenObj.getIssuer());
+
+                    logger.info("Token subject body: " + tokenObj.getSubject());
+                    try {
+                        JSONObject subjectObj = new JSONObject(tokenObj.getSubject());
+                        request.setAttribute(Constants.USER_CONTEXT,
+                                subjectObj.has(Constants.USER_CONTEXT) ? subjectObj.getString(Constants.USER_CONTEXT) : null);
+
+                    } catch (JSONException e){
+                        ErrorContext errorContext = new ErrorContext(tokenObj.getId(), "TokenParse", e.getMessage());
                         ErrorMessage errorMessage = new ErrorMessage(Constants.CHECK_AUTHORIZATION_SERVICE_0001,
                                 Constants.CHECK_AUTHORIZATION_SERVICE_0001_DESCRIPTION, errorContext);
 
