@@ -20,8 +20,7 @@ public class Constants {
 
     public static final String USER_CONTEXT = "context";
 
-    public static final String SECRET_KEY = "MTUxMWFlMjctNWZjNS00YmVlLWJlZTMtYmRkNTY2ZWQyY2E3NDg2YTNlNDktNTA0MS00NWRjLTg3NDktNGU5NGJhY2IwN2M3";
-
+    
     public static final String QUESTION_SIGN = "?";
 
     public static final String API_DOCS = "api-docs";
